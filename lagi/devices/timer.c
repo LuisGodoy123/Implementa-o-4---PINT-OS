@@ -27,6 +27,8 @@ static bool too_many_loops (unsigned loops);
 static void busy_wait (int64_t loops);
 static void real_time_sleep (int64_t num, int32_t denom);
 static void real_time_delay (int64_t num, int32_t denom);
+static bool wakeup_less (const struct list_elem *a,
+                          const struct list_elem *b, void *aux);
 
 void
 timer_init (void)
@@ -72,6 +74,15 @@ int64_t
 timer_elapsed (int64_t then)
 {
   return timer_ticks () - then;
+}
+
+static bool
+wakeup_less (const struct list_elem *a, const struct list_elem *b,
+             void *aux UNUSED)
+{
+  const struct thread *ta = list_entry (a, struct thread, elem);
+  const struct thread *tb = list_entry (b, struct thread, elem);
+  return ta->wakeup_ticks < tb->wakeup_ticks;
 }
 
 void
