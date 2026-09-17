@@ -151,6 +151,16 @@ timer_interrupt (struct intr_frame *args UNUSED)
 {
   ticks++;
   thread_tick ();
+
+  while (!list_empty (&sleeping_list))
+    {
+      struct thread *t = list_entry (list_front (&sleeping_list),
+                                      struct thread, elem);
+      if (t->wakeup_ticks > ticks)
+        break;
+      list_pop_front (&sleeping_list);
+      thread_unblock (t);
+    }
 }
 
 static bool
