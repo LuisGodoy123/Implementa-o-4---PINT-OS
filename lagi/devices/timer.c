@@ -88,11 +88,20 @@ wakeup_less (const struct list_elem *a, const struct list_elem *b,
 void
 timer_sleep (int64_t ticks)
 {
-  int64_t start = timer_ticks ();
+  struct thread *cur;
+  enum intr_level old_level;
 
   ASSERT (intr_get_level () == INTR_ON);
-  while (timer_elapsed (start) < ticks)
-    thread_yield ();
+
+  if (ticks <= 0)
+    return;
+
+  cur = thread_current ();
+  old_level = intr_disable ();
+  cur->wakeup_ticks = timer_ticks () + ticks;
+  list_insert_ordered (&sleeping_list, &cur->elem, wakeup_less, NULL);
+  thread_block ();
+  intr_set_level (old_level);
 }
 
 void
