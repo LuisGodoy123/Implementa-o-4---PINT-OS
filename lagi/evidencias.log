@@ -1,0 +1,42 @@
+$ cd threads && make
+i386-elf-gcc -c ../../devices/timer.c -o devices/timer.o -m32 -g -msoft-float -O0 -fno-stack-protector -nostdinc -I../.. -I../../lib -I../../lib/kernel -Wall -W -Wstrict-prototypes -Wmissing-prototypes -Wsystem-headers  -MMD -MF devices/timer.d
+i386-elf-ld -melf_i386 -T threads/kernel.lds.s -o kernel.o [...]
+i386-elf-objcopy -R .note -R .comment -S kernel.o kernel.bin
+(build concluido sem erros e sem warnings em timer.c/thread.h)
+
+$ cd build && pintos -- -q run alarm-multiple
+(alarm-multiple) begin
+(alarm-multiple) Creating 5 threads to sleep 7 times each.
+(alarm-multiple) thread 0: duration=10, iteration=1, product=10
+(alarm-multiple) thread 1: duration=20, iteration=1, product=20
+(alarm-multiple) thread 0: duration=10, iteration=2, product=20
+...
+(alarm-multiple) thread 4: duration=50, iteration=7, product=350
+(alarm-multiple) end
+Execution of 'alarm-multiple' complete.
+Timer: 583 ticks
+Thread: 550 idle ticks, 33 kernel ticks, 0 user ticks
+
+Antes da correcao (timer_sleep com busy wait): 0 idle ticks, 581 kernel ticks
+Depois (timer_sleep sem busy wait): 550 idle ticks, 33 kernel ticks
+=> CPU fica ociosa em vez de girar em busy wait enquanto as threads dormem.
+
+$ make tests/threads/alarm-single.result
+pass tests/threads/alarm-single
+
+$ make tests/threads/alarm-multiple.result
+pass tests/threads/alarm-multiple
+
+$ make tests/threads/alarm-simultaneous.result
+pass tests/threads/alarm-simultaneous
+
+$ make tests/threads/alarm-zero.result
+pass tests/threads/alarm-zero
+
+$ make tests/threads/alarm-negative.result
+pass tests/threads/alarm-negative
+
+$ make tests/threads/alarm-priority.result
+FAIL tests/threads/alarm-priority
+(esperado: esse teste exige escalonamento por prioridade, fora do escopo do
+alarm clock pedido no PDF, que so cobre timer_sleep sem busy wait)
