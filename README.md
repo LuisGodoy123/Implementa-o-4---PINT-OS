@@ -41,6 +41,3 @@ Os 5 testes de alarm clock do Pint-OS passam: `alarm-single`,
 `alarm-priority` falha, pois exige escalonamento por prioridade, fora do
 escopo desta entrega (ver relatório para detalhes).
 
-## Relatório
-
-[link do PDF a preencher]
